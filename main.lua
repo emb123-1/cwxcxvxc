@@ -865,7 +865,6 @@ Library.RenderModules = setmetatable({
 },Library.RenderModules)
 local Tabs = Library.Tabs;
 local Sections = Library.sections;
---> this is so when initating and using the library functions, the elements get connected by index
 Library.__index = Library
 Tabs.__index = Library.Tabs
 Sections.__index = Library.sections
@@ -895,10 +894,13 @@ function Library:Window(properties)
 	local Dragging = false
 	local DragStart = nil
 	local StartPos = nil
+	local TargetPos = nil
+	local CurrentPos = nil
+	local Smoothness = 0.15 --> Lower = more delay/smoothness (0.1 - 0.3 recommended)
 
 	local function UpdateDrag(input)
 		local delta = input.Position - DragStart
-		NewWindow["Window"].Position = UDim2.new(
+		TargetPos = UDim2.new(
 			StartPos.X.Scale, 
 			StartPos.X.Offset + delta.X, 
 			StartPos.Y.Scale, 
@@ -906,11 +908,28 @@ function Library:Window(properties)
 		)
 	end
 
+	local DragConnection
+	DragConnection = RunService.RenderStepped:Connect(function()
+		if CurrentPos and TargetPos then
+			local current = CurrentPos
+			local target = TargetPos
+			
+			local newX = current.X.Offset + (target.X.Offset - current.X.Offset) * Smoothness
+			local newY = current.Y.Offset + (target.Y.Offset - current.Y.Offset) * Smoothness
+			
+			CurrentPos = UDim2.new(current.X.Scale, newX, current.Y.Scale, newY)
+			NewWindow["Window"].Position = CurrentPos
+		end
+	end)
+	table.insert(Library.Connections, DragConnection)
+
 	Utility:storeEvent(NewWindow["Window"].InputBegan, function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			Dragging = true
 			DragStart = input.Position
 			StartPos = NewWindow["Window"].Position
+			CurrentPos = StartPos
+			TargetPos = StartPos
 		end
 	end)
 
